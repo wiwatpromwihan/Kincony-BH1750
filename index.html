@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Kincony · Seedling Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root{color-scheme:light;--ink:#182230;--muted:#738094;--line:#e7ecf2;--paper:#fff;--bg:#f4f7fb;--green:#16845b;--green-bg:#e8f6ef;--amber:#a76614;--amber-bg:#fff4df;--red:#ba4545;--red-bg:#ffeded;--blue:#4169d7;--shadow:0 8px 26px rgba(21,39,67,.055)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans','IBM Plex Sans Thai',sans-serif;font-size:14px}button,select{font:inherit}.shell{max-width:1440px;margin:auto;padding:30px clamp(16px,3vw,44px) 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:13px}.mark{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#e9f4ed;color:var(--green);font-size:24px}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}.brand h1{font-size:22px;line-height:1.2;margin:3px 0 0;letter-spacing:-.03em}.sync{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.pulse{width:8px;height:8px;border-radius:50%;background:#b9c2ce}.pulse.live{background:#21a56f;box-shadow:0 0 0 4px #e4f5ed}.pulse.dead{background:#d55b5b;box-shadow:0 0 0 4px #ffeded}.grid{display:grid;gap:18px}.overview{grid-template-columns:1.5fr 1fr 1fr 1fr;margin-bottom:18px}.panel,.metric{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.metric{padding:19px 21px;min-height:120px}.metric-label{font-size:12px;color:var(--muted);font-weight:600}.metric-value{font-size:27px;font-weight:700;letter-spacing:-.045em;margin:13px 0 3px}.metric-note{font-size:11px;color:var(--muted)}.status-panel{padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between}.status-row{display:flex;justify-content:space-between;align-items:center}.status-label{font-size:12px;color:var(--muted);font-weight:600}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700;background:#eef1f5;color:#6d7888}.badge.good{background:var(--green-bg);color:var(--green)}.badge.warn{background:var(--amber-bg);color:var(--amber)}.badge.bad{background:var(--red-bg);color:var(--red)}.badge.info{background:#edf2ff;color:#4160b5}.mode{font-weight:700;font-size:18px;margin-top:14px}.pending{margin-top:6px;font-size:11px;color:var(--muted)}.pending.attn{color:#a76614;background:#fff8e9;border-radius:8px;padding:7px 9px}.split{grid-template-columns:1.05fr 1.95fr;margin-bottom:18px}.panel{padding:21px 22px}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}.panel-title{margin:0;font-size:16px;letter-spacing:-.02em}.panel-sub{margin:4px 0 0;font-size:11px;color:var(--muted)}.lux-value{font-size:42px;font-weight:700;letter-spacing:-.06em;margin:5px 0}.unit{font-size:16px;color:var(--muted);font-weight:500;letter-spacing:0}.light-status{display:flex;gap:7px;align-items:center;margin:10px 0 12px}.chart-wrap{height:190px;position:relative}.chart-wide{height:235px}.sensor-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.select{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 11px;color:var(--ink);min-width:160px}.relay-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.relay{border:1px solid var(--line);border-radius:12px;padding:13px 8px;text-align:center;background:#fbfcfd}.relay.on{border-color:#c7ead8;background:#f0faf4}.bulb{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:#edf0f4;color:#8893a2;margin:0 auto 8px;font-size:17px}.relay.on .bulb{background:#d9f2e4;color:#16845b}.relay-name{font-size:11px;font-weight:700}.relay-state{font-size:10px;color:var(--muted);margin-top:3px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:27px 1px 13px}.section-head h2{font-size:17px;margin:0;letter-spacing:-.03em}.section-head p{font-size:11px;color:var(--muted);margin:4px 0 0}.mijia-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}.m-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px;box-shadow:var(--shadow);min-width:0}.m-card.unknown{background:#fafbfd;color:#8c97a6}.m-top{display:flex;justify-content:space-between;align-items:start;gap:6px}.m-name{font-weight:700;font-size:13px}.m-mac{font-size:9px;color:var(--muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.m-values{display:grid;grid-template-columns:1fr 1fr;gap:10px 7px;margin:15px 0 12px}.m-reading{font-size:18px;font-weight:700;letter-spacing:-.04em}.m-reading small{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0}.m-caption{font-size:9px;color:var(--muted);margin-bottom:3px}.battery{display:flex;align-items:center;gap:6px}.battery-icon{height:12px;width:21px;border:1.5px solid currentColor;border-radius:3px;padding:2px;position:relative}.battery-icon:after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:4px;background:currentColor;border-radius:0 2px 2px 0}.battery-fill{height:100%;background:var(--green);border-radius:1px}.last-seen{font-size:9px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px}.empty-reading{font-size:12px;color:#9aa4b2;padding:10px 0 17px}.foot{color:var(--muted);font-size:10px;margin-top:21px;text-align:center}.config-banner{background:#fff7e8;border:1px solid #f3dfb8;color:#795622;border-radius:12px;padding:11px 14px;margin-bottom:17px;font-size:12px;display:none}.config-banner.show{display:block}
+    @media(max-width:1050px){.overview{grid-template-columns:repeat(2,1fr)}.mijia-grid{grid-template-columns:repeat(3,1fr)}.split{grid-template-columns:1fr 1.5fr}}
+    @media(max-width:700px){.shell{padding:20px 14px 34px}.top{align-items:flex-start}.brand h1{font-size:19px}.sync{font-size:10px}.overview,.split{grid-template-columns:1fr 1fr;gap:11px}.status-panel{grid-column:span 2;min-height:120px}.metric{padding:15px;min-height:106px}.metric-value{font-size:24px}.panel{grid-column:span 2;padding:17px}.relay-grid{grid-template-columns:repeat(3,1fr)}.mijia-grid{grid-template-columns:repeat(2,1fr);gap:10px}.m-card{padding:12px}.m-reading{font-size:17px}.section-head{align-items:start;flex-direction:column}.sensor-toolbar{align-items:flex-start;flex-direction:column}.chart-wrap{height:190px}}
+    @media(max-width:390px){.mijia-grid{grid-template-columns:1fr 1fr}.badge{font-size:9px;padding:4px 7px}.brand{gap:9px}.mark{width:40px;height:40px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div class="brand"><div class="mark" aria-hidden="true">✳</div><div><div class="eyebrow">KINCONY · ENVIRONMENT</div><h1>Seedling Monitor</h1></div></div>
+      <div class="sync"><span id="syncDot" class="pulse"></span><span id="syncText">กำลังเชื่อมต่อ Firebase…</span></div>
+    </header>
+    <div id="configBanner" class="config-banner">ยังไม่ได้ตั้งค่า Firebase: แก้ค่า placeholder ใน <strong>firebase-config.js</strong> แล้วรีเฟรชหน้า</div>
+    <section class="grid overview" aria-label="ภาพรวมระบบ">
+      <article class="panel status-panel"><div class="status-row"><span class="status-label">สถานะบอร์ด</span><span id="boardBadge" class="badge">รอข้อมูล</span></div><div><div class="mode" id="modeActive">โหมด —</div><div id="modePending" class="pending">โหมดรอยืนยัน —</div></div></article>
+      <article class="metric"><div class="metric-label">Uptime</div><div class="metric-value" id="uptime">—</div><div class="metric-note">เวลาทำงานของบอร์ด</div></article>
+      <article class="metric"><div class="metric-label">Mijia ออนไลน์</div><div class="metric-value" id="onlineCount">—<span class="unit"> / 10</span></div><div class="metric-note">อุปกรณ์ที่พบใน 5 นาทีล่าสุด</div></article>
+      <article class="metric"><div class="metric-label">คุณภาพเซนเซอร์แสง</div><div class="metric-value" id="lightHealth">—</div><div class="metric-note" id="lightHealthNote">BH1750</div></article>
+    </section>
+    <section class="grid split">
+      <article class="panel">
+        <div class="panel-head"><div><h2 class="panel-title">แสงแวดล้อม</h2><p class="panel-sub">BH1750 · ความสว่างปัจจุบัน</p></div><span class="badge" id="lightBadge">รอข้อมูล</span></div>
+        <div class="lux-value" id="luxValue">— <span class="unit">lx</span></div>
+        <div class="light-status"><span id="lightHealthInline" class="badge">ไม่ทราบสถานะ</span></div>
+        <div class="chart-wrap"><canvas id="luxChart" aria-label="กราฟแสงย้อนหลัง"></canvas></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><h2 class="panel-title">สถานะรีเลย์</h2><p class="panel-sub">แสดงสถานะจากข้อมูลล่าสุด · อ่านอย่างเดียว</p></div><span class="badge info">6 ช่อง</span></div>
+        <div class="relay-grid" id="relayGrid"></div>
+      </article>
+    </section>
+    <section class="panel">
+      <div class="sensor-toolbar"><div><h2 class="panel-title">ประวัติเซนเซอร์</h2><p class="panel-sub">60 รายการล่าสุด · อัปเดตแบบ realtime</p></div><label class="panel-sub" for="sensorSelect">เลือกอุปกรณ์ <select class="select" id="sensorSelect"></select></label></div>
+      <div class="chart-wrap chart-wide"><canvas id="sensorChart" aria-label="กราฟอุณหภูมิและความชื้นย้อนหลัง"></canvas></div>
+    </section>
+    <div class="section-head"><div><h2>Mijia 2 · Sensors</h2><p>สภาพแวดล้อมและแบตเตอรี่รายอุปกรณ์</p></div><span id="summaryBadge" class="badge">รอข้อมูล</span></div>
+    <section id="mijiaGrid" class="mijia-grid" aria-label="เซนเซอร์ Mijia 10 ตัว"></section>
+    <footer class="foot">ข้อมูลอัปเดตจาก Firebase RTDB · เวลาแสดง Asia/Bangkok · Dashboard สำหรับมอนิเตอร์เท่านั้น</footer>
+  </main>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getDatabase, ref, onValue, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+    import { firebaseConfig, databaseURL, dataPath } from './firebase-config.js';
+
+    const el = (id) => document.getElementById(id);
+    const ids = Array.from({length:10}, (_,i) => `mijia_${String(i+1).padStart(2,'0')}`);
+    let latest = null, historyRows = [], latestChart = null, luxChart = null;
+    const configReady = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('YOUR_') && firebaseConfig.projectId && !firebaseConfig.projectId.includes('YOUR_');
+    const formatTime = (seconds) => seconds ? new Intl.DateTimeFormat('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Bangkok'}).format(new Date(seconds*1000)) : '—';
+    const number = (v, digits=1) => Number.isFinite(Number(v)) ? Number(v).toLocaleString('th-TH',{maximumFractionDigits:digits}) : '—';
+    const modeName = (v) => { const s=String(v ?? '—'); if(s==='0')return 'โหมดแสง · BH1750'; if(s==='1')return 'โหมดแบตเตอรี่ · Mijia'; return s==='—'?s:`โหมด ${s}`; };
+    function setBoardStatus(){
+      const badge=el('boardBadge'), dot=el('syncDot'), text=el('syncText');
+      const age=latest?.timestamp ? (Date.now()/1000)-Number(latest.timestamp) : Infinity;
+      const online=age>=0 && age<=90;
+      badge.className=`badge ${online?'good':latest?'bad':''}`; badge.textContent=online?'ออนไลน์':latest?'ออฟไลน์':'รอข้อมูล';
+      dot.className=`pulse ${online?'live':latest?'dead':''}`;
+      text.textContent=online?`ข้อมูลล่าสุด ${Math.max(0,Math.floor(age))} วินาทีที่แล้ว`:latest?'ข้อมูลจากบอร์ดไม่อัปเดต':'กำลังเชื่อมต่อ Firebase…';
+    }
+    function renderLatest(data){
+      latest=data||{}; setBoardStatus();
+      el('uptime').textContent=duration(latest.board?.uptime_s);
+      el('modeActive').textContent=modeName(latest.board?.mode_active);
+      const pending=latest.board?.mode_pending, active=latest.board?.mode_active;
+      const differs=pending!=null && String(pending)!==String(active) && String(pending)!=='-1' && String(pending)!=='';
+      el('modePending').textContent=`${differs?'⚠ รอยืนยัน: ':'รอยืนยัน: '}${modeName(pending)}`;
+      el('modePending').classList.toggle('attn',differs);
+      const light=latest.light||{};
+      el('luxValue').innerHTML=`${number(light.lux)} <span class="unit">lx</span>`;
+      const healthy=light.healthy===true;
+      const badgeClass=light.healthy===true?'good':light.healthy===false?'bad':'';
+      el('lightBadge').className=`badge ${badgeClass}`; el('lightBadge').textContent=light.status|| (healthy?'ปกติ':'ไม่พบสถานะ');
+      el('lightHealth').textContent=light.healthy===true?'ปกติ':light.healthy===false?'ผิดปกติ':'—';
+      el('lightHealthNote').textContent=light.status||'BH1750';
+      el('lightHealthInline').className=`badge ${badgeClass}`; el('lightHealthInline').textContent=light.status||'สถานะเซนเซอร์แสง';
+      const on=Number(latest.summary?.mijia_online ?? Object.values(latest.mijia||{}).filter(x=>x?.online).length);
+      el('onlineCount').innerHTML=`${on}<span class="unit"> / ${latest.summary?.mijia_total||10}</span>`;
+      el('summaryBadge').className=`badge ${healthy?'good':light.healthy===false?'bad':'warn'}`;
+      el('summaryBadge').textContent=`แสง ${healthy?'ปกติ':light.healthy===false?'ผิดปกติ':'ไม่ทราบ'} · Mijia ${on}/10 ออนไลน์`;
+      renderRelays(latest.board?.relay||{}); renderMijia(latest.mijia||{});
+    }
+    function duration(sec){if(!Number.isFinite(Number(sec)))return '—';let s=Math.max(0,Math.floor(Number(sec)));const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);return [d?`${d} วัน`:null,h?`${h} ชม.`:null,`${m} นาที`].filter(Boolean).join(' ')}
+    function renderRelays(relays){el('relayGrid').innerHTML=Array.from({length:6},(_,i)=>{const key=`relay_${i+1}`,on=relays[key]===true;return `<div class="relay ${on?'on':''}"><div class="bulb" aria-hidden="true">${on?'💡':'◌'}</div><div class="relay-name">Relay ${i+1}</div><div class="relay-state">${on?'เปิด':'ปิด'}</div></div>`}).join('')}
+    function renderMijia(values){el('mijiaGrid').innerHTML=ids.map((id,i)=>{const d=values[id]||{}, never=!(d.last_seen||d.online||Number.isFinite(Number(d.temp))),state=never?'ยังไม่พบสัญญาณ':d.online?'ออนไลน์':'ออฟไลน์',cls=never?'':d.online?'good':'bad';const batt=Number(d.batt),width=Number.isFinite(batt)?Math.max(0,Math.min(100,batt)):0;return `<article class="m-card ${never?'unknown':''}"><div class="m-top"><div style="min-width:0"><div class="m-name">Mijia ${String(i+1).padStart(2,'0')}</div><div class="m-mac" title="${escapeHtml(d.mac||'ไม่ทราบ MAC')}">${escapeHtml(d.mac||'MAC —')}</div></div><span class="badge ${cls}">${state}</span></div>${never?'<div class="empty-reading">รอรับสัญญาณ BLE</div>':`<div class="m-values"><div><div class="m-caption">อุณหภูมิ</div><div class="m-reading">${number(d.temp)}<small> °C</small></div></div><div><div class="m-caption">ความชื้น</div><div class="m-reading">${number(d.humi,0)}<small> %</small></div></div><div><div class="m-caption">แบตเตอรี่</div><div class="battery"><span class="battery-icon"><span class="battery-fill" style="display:block;width:${width}%"></span></span><span class="m-reading" style="font-size:14px">${Number.isFinite(batt)?`${number(batt,0)}%`:'—'}</span></div></div><div><div class="m-caption">สัญญาณล่าสุด</div><div class="m-reading" style="font-size:12px">${escapeHtml(d.last_seen||'—')}</div></div></div>`}<div class="last-seen">${escapeHtml(d.status||state)}</div></article>`}).join('')}
+    function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    const labels=ids.map((_,i)=>`Mijia ${String(i+1).padStart(2,'0')}`);
+    el('sensorSelect').innerHTML=labels.map((x,i)=>`<option value="${ids[i]}">${x}</option>`).join('');
+    function chartOptions(){return {responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true,boxWidth:7,font:{family:'DM Sans, IBM Plex Sans Thai',size:10}}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:7,font:{size:9},color:'#8a96a7'}},y:{grid:{color:'#f0f2f6'},ticks:{font:{size:9},color:'#8a96a7'}}}}}
+    function setupCharts(){if(!window.Chart)return;luxChart=new Chart(el('luxChart'),{type:'line',data:{labels:[],datasets:[{label:'แสง (lx)',data:[],borderColor:'#d59a37',backgroundColor:'rgba(213,154,55,.12)',fill:true,tension:.35,pointRadius:1.5,borderWidth:2}]},options:chartOptions()});latestChart=new Chart(el('sensorChart'),{type:'line',data:{labels:[],datasets:[]},options:{...chartOptions(),scales:{...chartOptions().scales,y:{...chartOptions().scales.y,beginAtZero:false}}}})}
+    function renderHistory(){if(!window.Chart||!latestChart||!luxChart)return;const sorted=[...historyRows].filter(x=>Number.isFinite(Number(x.timestamp))).sort((a,b)=>a.timestamp-b.timestamp);const selected=el('sensorSelect').value;const times=sorted.map(x=>formatTime(Number(x.timestamp)));const colors=['#386bd7','#19a374'];latestChart.data.labels=times;latestChart.data.datasets=[{label:'อุณหภูมิ (°C)',data:sorted.map(x=>val(x,selected,'temp')),borderColor:colors[0],tension:.3,pointRadius:1.5,borderWidth:2,spanGaps:true},{label:'ความชื้น (%)',data:sorted.map(x=>val(x,selected,'humi')),borderColor:colors[1],tension:.3,pointRadius:1.5,borderWidth:2,spanGaps:true}];latestChart.update('none');luxChart.data.labels=times;luxChart.data.datasets[0].data=sorted.map(x=>Number.isFinite(Number(x.light?.lux))?Number(x.light.lux):null);luxChart.update('none')}
+    function val(row,id,field){const n=Number(row.mijia?.[id]?.[field]);return Number.isFinite(n)?n:null}
+    el('sensorSelect').addEventListener('change',renderHistory); setupCharts();
+    setInterval(setBoardStatus,5000);
+    if(!configReady){el('configBanner').classList.add('show');el('syncText').textContent='รอตั้งค่า Firebase'}
+    else {try{const app=initializeApp({...firebaseConfig,databaseURL:databaseURL||firebaseConfig.databaseURL});const db=getDatabase(app);onValue(ref(db,`${dataPath}/latest`),s=>renderLatest(s.val()),e=>{el('syncText').textContent=`Firebase: ${e.message}`;el('syncDot').className='pulse dead'});const hist=query(ref(db,`${dataPath}/history`),orderByChild('timestamp'),limitToLast(60));onValue(hist,s=>{const v=s.val()||{};historyRows=Object.values(v);renderHistory()},e=>{el('syncText').textContent=`History: ${e.message}`})}catch(e){el('syncText').textContent=`ตั้งค่า Firebase ไม่สำเร็จ: ${e.message}`}}
+  </script>
+</body>
+</html>
