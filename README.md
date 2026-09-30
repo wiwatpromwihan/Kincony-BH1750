@@ -1,11 +1,11 @@
 # Kincony BH1750 · Seedling Monitor Dashboard
 
-หน้าเว็บ Dashboard สำหรับติดตามค่าจาก ESP32/Kincony ผ่าน Firebase Realtime Database และ GitHub Pages หน้าเว็บนี้อ่านข้อมูลอย่างเดียว การควบคุม Relay ทำผ่าน ESPHome Web Server ที่บอร์ดตามที่กำหนดไว้
+หน้าเว็บ Dashboard สำหรับติดตามค่าจาก ESP32/Kincony ผ่าน Firebase Realtime Database และ GitHub Pages พร้อมปุ่มควบคุม Relay ผ่าน MQTT over WebSocket
 
 ## ไฟล์
 
 - `index.html` — responsive dashboard และกราฟ Chart.js
-- `firebase-config.js` — Firebase Web App config placeholders และ path ของข้อมูล
+- `firebase-config.js` — Firebase Web App config และ path ของข้อมูล
 
 ## ตั้งค่า Firebase
 
@@ -35,6 +35,17 @@ git push origin main
 - สถานะบอร์ดคำนวณจาก `latest.timestamp`: online เมื่อข้อมูลมีอายุไม่เกิน 90 วินาที ไม่อาศัย `board.online`
 - กราฟแสงแสดง `light.lux`; กราฟที่เลือก Mijia แสดง `temp` และ `humi` จากแถว history โดยใช้ timestamp หน่วยวินาที
 - แสดง Mijia 01–10 รวมถึงสถานะยังไม่พบสัญญาณ, ค่าอุณหภูมิ/ความชื้น/แบตเตอรี่ และสถานะ Relay 1–6
-- Dashboard ไม่มีปุ่มควบคุม Relay
+- ปุ่มเปิด/ปิด Relay ส่ง MQTT `TOGGLE` ไปยัง `pkru/kc868_a6_01/209-219/relay/{1..6}/toggle`; ปุ่มปิดทั้งหมดส่ง `OFF` ไป `.../all/set`
+- ปุ่มควบคุมจะเปิดใช้เมื่อ MQTT เชื่อมต่อและข้อมูลบอร์ดสดไม่เกิน 90 วินาที หลังส่งแล้วรอข้อมูลสถานะกลับจาก Firebase เพื่อยืนยัน หากไม่กลับภายใน 45 วินาทีจะแจ้งว่ายังยืนยันไม่ได้
 
 หน้าเว็บโหลด Firebase JS SDK และ Chart.js จาก CDN จึงต้องเชื่อมอินเทอร์เน็ตใน browser เพื่อเปิดหน้า Dashboard
+
+## คำสั่ง Relay และข้อจำกัดความปลอดภัย
+
+การควบคุมหน้าเว็บอาศัย MQTT config ใน firmware: `test.mosquitto.org:1883` และ topic ที่กำหนดใน `on_message` ของอุปกรณ์ ส่วน browser เชื่อม `wss://test.mosquitto.org:8081/mqtt` ตัว broker นี้เป็น broker สาธารณะ ไม่ต้องใช้บัญชี และทุกคนที่รู้ topic สามารถ publish ได้ จึงใช้กับ Relay จำลองเพื่อสาธิตเท่านั้น ห้ามต่อโหลดจริงหรืออุปกรณ์ที่ทำให้เกิดอันตราย ควรย้ายไป broker ส่วนตัวที่ใช้ TLS, username/password และ ACL จำกัดสิทธิ์ topic ก่อนใช้งานจริง
+
+Firmware ตัวอย่างยังสร้างเสียงแจ้งเตือนด้วยการกระพริบ Relay 1–6 ตาม event บางอย่าง เช่นแสงและแบตเตอรี่ ดังนั้น event เหล่านี้อาจเปลี่ยนสถานะ Relay หลังสั่งจาก Dashboard ได้ หากต้องการให้ Relay เป็นเอาต์พุตควบคุมคงที่ ให้ปิด/ย้าย animation เหล่านั้นไปยังเอาต์พุตเฉพาะก่อน
+
+## แก้สถานะ BH1750 ที่รายงานปกติทั้งที่ไม่มีค่า
+
+Firmware เดิมตั้ง `light.healthy` จากตัวตรวจค่ากระโดดเท่านั้น จึงอาจเป็น `true` ตั้งแต่ยังไม่มีค่า `lux` (ค่าเซนเซอร์เป็น NaN) หน้าเว็บใหม่นี้ถือว่าแสงปกติเฉพาะเมื่อมีค่า lux เป็นตัวเลขและ `healthy` เป็น true; เมื่อไม่มี lux จะแสดง “ไม่มีข้อมูล lux · ตรวจสอบ BH1750/I²C”. ได้แก้ตัวสร้าง snapshot ในไฟล์ทำงาน `209_224.txt` ให้ `healthy=false` และส่งสถานะตรวจสอบ I²C เมื่อ BH1750 ยังไม่มีค่าด้วย ต้องคอมไพล์และแฟลช firmware ฉบับแก้ไขลงบอร์ดเพื่อให้ Firebase แสดงสถานะถูกต้องด้วย
