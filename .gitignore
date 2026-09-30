@@ -1,2 +1,6 @@
 .DS_Store
 firmware/secrets.yaml
+.venv/
+.venv312/
+
+/config/

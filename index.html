@@ -117,7 +117,10 @@
     function renderHistory(){if(!window.Chart||!latestChart||!luxChart)return;const sorted=[...historyRows].filter(x=>Number.isFinite(Number(x.timestamp))).sort((a,b)=>a.timestamp-b.timestamp);const selected=el('sensorSelect').value;const times=sorted.map(x=>formatTime(Number(x.timestamp)));const colors=['#386bd7','#19a374'];latestChart.data.labels=times;latestChart.data.datasets=[{label:'อุณหภูมิ (°C)',data:sorted.map(x=>val(x,selected,'temp')),borderColor:colors[0],tension:.3,pointRadius:1.5,borderWidth:2,spanGaps:true},{label:'ความชื้น (%)',data:sorted.map(x=>val(x,selected,'humi')),borderColor:colors[1],tension:.3,pointRadius:1.5,borderWidth:2,spanGaps:true}];latestChart.update('none');luxChart.data.labels=times;luxChart.data.datasets[0].data=sorted.map(x=>Number.isFinite(Number(x.light?.lux))?Number(x.light.lux):null);luxChart.update('none')}
     function val(row,id,field){const n=Number(row.mijia?.[id]?.[field]);return Number.isFinite(n)?n:null}
     el('sensorSelect').addEventListener('change',renderHistory); setupCharts();
-    setInterval(()=>{setBoardStatus();updateControls()},5000);
+    // อัปเดตอายุข้อมูลทุกวินาทีจาก timestamp ล่าสุด ไม่รอ Firebase snapshot รอบถัดไป
+    setInterval(setBoardStatus,1000);
+    // ตรวจสถานะควบคุมเป็นรอบแยก เพื่อไม่ render ปุ่ม Relay ซ้ำทุกวินาที
+    setInterval(updateControls,5000);
     connectMqtt();
     if(!configReady){el('configBanner').classList.add('show');el('syncText').textContent='รอตั้งค่า Firebase'}
     else {try{const app=initializeApp({...firebaseConfig,databaseURL:databaseURL||firebaseConfig.databaseURL});const db=getDatabase(app);onValue(ref(db,`${dataPath}/latest`),s=>renderLatest(s.val()),e=>{el('syncText').textContent=`Firebase: ${e.message}`;el('syncDot').className='pulse dead'});const hist=query(ref(db,`${dataPath}/history`),orderByChild('timestamp'),limitToLast(60));onValue(hist,s=>{const v=s.val()||{};historyRows=Object.values(v);renderHistory()},e=>{el('syncText').textContent=`History: ${e.message}`})}catch(e){el('syncText').textContent=`ตั้งค่า Firebase ไม่สำเร็จ: ${e.message}`}}
