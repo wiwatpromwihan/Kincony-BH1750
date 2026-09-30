@@ -6,6 +6,8 @@
 
 - `index.html` — responsive dashboard และกราฟ Chart.js
 - `firebase-config.js` — Firebase Web App config และ path ของข้อมูล
+- `firmware/kincony.yaml` — ESPHome firmware สำหรับ Kincony KC868-A6, Wi‑Fi, MQTT, BH1750, Relay และ Firebase snapshot
+- `firmware/secrets.yaml.example` — แบบตัวอย่าง secrets สำหรับตั้งค่าบอร์ด; ไฟล์จริง `firmware/secrets.yaml` ถูก ignore ใน Git
 
 ## ตั้งค่า Firebase
 
@@ -27,6 +29,22 @@ git push origin main
 ```
 
 จากนั้นเปิด **Settings → Pages** ใน GitHub repository เลือก **Deploy from a branch**, branch `main`, folder `/ (root)` แล้วกด Save รอ build เสร็จ หน้าเว็บจะอยู่ที่ `https://wiwatpromwihan.github.io/Kincony-BH1750/` หากเปิด Pages ไว้แล้ว การ push ไป `main` จะ deploy อัตโนมัติ
+
+
+## เชื่อมต่อและแฟลช Kincony
+
+Firmware อยู่ที่ `firmware/kincony.yaml` โดย publish สถานะ online/offline ไป MQTT และรับคำสั่ง Relay บน topics ที่ Dashboard ใช้ตรงกัน ค่า Wi‑Fi และ API encryption key แยกอยู่ใน `firmware/secrets.yaml` และไม่ถูก push ขึ้น GitHub ใน workspace ปัจจุบันไฟล์ secrets ถูกเตรียมจาก Wi‑Fi ที่ให้ไว้แล้ว; เมื่อ clone repo ลงเครื่องอื่น ให้คัดลอกไฟล์ตัวอย่างและกรอกค่าเอง:
+
+```bash
+cp firmware/secrets.yaml.example firmware/secrets.yaml
+# กรอก Wi-Fi 2.4 GHz และสร้าง API key ใหม่ด้วย: openssl rand -base64 32
+esphome config firmware/kincony.yaml
+esphome run firmware/kincony.yaml
+```
+
+เชื่อม USB data cable ตอนสั่ง `esphome run` แล้วเลือก serial port หาก ESPHome ถาม หลังแฟลชให้ดู log ว่าบอร์ดได้ IP และ MQTT connected; หน้า Dashboard จะขึ้น “บอร์ดเชื่อม MQTT แล้ว” เมื่อรับ retained status `online` และจะเปิดปุ่มควบคุมเมื่อ Firebase ยังได้รับ snapshot สดด้วย ใช้ Wi‑Fi hotspot 2.4 GHz; หาก iPhone hotspot ไม่เห็นบอร์ด ให้เปิด **Maximize Compatibility** ก่อนแฟลช/เชื่อมต่อ
+
+ไฟล์ config ใช้ KC868-A6 I2C `GPIO4` SDA / `GPIO15` SCL และ PCF8574 output address `0x24` ตามไฟล์อ้างอิงที่ให้มา โปรดตรวจรุ่น/revision บนบอร์ดก่อนแฟลชจริง เซนเซอร์ Mijia ใน config นี้ใช้ BTHome v2 ผ่าน firmware PVVX; ถ้ายังใช้ firmware Xiaomi เดิม จะยังไม่มีค่า BLE ตาม config นี้
 
 ## ข้อมูลและพฤติกรรมหน้าเว็บ
 

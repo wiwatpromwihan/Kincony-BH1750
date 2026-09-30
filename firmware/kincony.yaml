@@ -1,0 +1,1486 @@
+esphome:
+  name: ac209
+  friendly_name: AC209
+
+esp32:
+  variant: esp32
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  reboot_timeout: 0s
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  power_save_mode: none
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: !secret fallback_ap_ssid
+    password: !secret fallback_ap_password
+
+captive_portal:
+
+# =========================================================
+# WEB DASHBOARD (ข้อกำหนดที่ 4)
+# ให้ dashboard ในตัวของ ESPHome เอง เข้าดูค่าเซนเซอร์และสั่ง Relay
+# ได้ตรงจาก browser ที่ http://<ip ของบอร์ด>/  โดยไม่ต้องพึ่ง Home Assistant
+# (ยังเปิด api: และ mqtt: ไว้ด้วย เผื่อจะต่อ Home Assistant/Node-RED เพิ่มทีหลัง)
+# =========================================================
+web_server:
+  version: 3
+  port: 80
+
+mqtt:
+  broker: test.mosquitto.org
+  port: 1883
+  keepalive: 60s
+
+  topic_prefix: pkru/kc868_a6_01/209
+
+  discovery: false
+
+  log_topic: null
+
+  # 15min instead of 0s: lets the board self-reboot and recover if MQTT stays
+  # unreachable too long, instead of sitting in a stuck/offline state.
+  reboot_timeout: 15min
+
+  birth_message:
+    topic: pkru/kc868_a6_01/209-219/status
+    payload: "online"
+    retain: true
+
+  will_message:
+    topic: pkru/kc868_a6_01/209-219/status
+    payload: "offline"
+    retain: true
+
+  shutdown_message:
+    topic: pkru/kc868_a6_01/209-219/status
+    payload: "offline"
+    retain: true
+
+  on_message:
+    - topic: pkru/kc868_a6_01/209-219/relay/1/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_1
+
+    - topic: pkru/kc868_a6_01/209-219/relay/2/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_2
+
+    - topic: pkru/kc868_a6_01/209-219/relay/3/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_3
+
+    - topic: pkru/kc868_a6_01/209-219/relay/4/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_4
+
+    - topic: pkru/kc868_a6_01/209-219/relay/5/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_5
+
+    - topic: pkru/kc868_a6_01/209-219/relay/6/toggle
+      payload: "TOGGLE"
+      then:
+        - switch.toggle: relay_6
+
+    - topic: pkru/kc868_a6_01/209-219/relay/1/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_1
+
+    - topic: pkru/kc868_a6_01/209-219/relay/1/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_1
+
+    - topic: pkru/kc868_a6_01/209-219/relay/2/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_2
+
+    - topic: pkru/kc868_a6_01/209-219/relay/2/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_2
+
+    - topic: pkru/kc868_a6_01/209-219/relay/3/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_3
+
+    - topic: pkru/kc868_a6_01/209-219/relay/3/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_3
+
+    - topic: pkru/kc868_a6_01/209-219/relay/4/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_4
+
+    - topic: pkru/kc868_a6_01/209-219/relay/4/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_4
+
+    - topic: pkru/kc868_a6_01/209-219/relay/5/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_5
+
+    - topic: pkru/kc868_a6_01/209-219/relay/5/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_5
+
+    - topic: pkru/kc868_a6_01/209-219/relay/6/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_6
+
+    - topic: pkru/kc868_a6_01/209-219/relay/6/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_6
+
+    - topic: pkru/kc868_a6_01/209-219/all/set
+      payload: "ON"
+      then:
+        - switch.turn_on: relay_1
+        - switch.turn_on: relay_2
+        - switch.turn_on: relay_3
+        - switch.turn_on: relay_4
+        - switch.turn_on: relay_5
+        - switch.turn_on: relay_6
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/all/state
+            payload: "ON"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/all/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: relay_1
+        - switch.turn_off: relay_2
+        - switch.turn_off: relay_3
+        - switch.turn_off: relay_4
+        - switch.turn_off: relay_5
+        - switch.turn_off: relay_6
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/all/state
+            payload: "OFF"
+            retain: true
+
+    # Dedicated one-shot emergency command for a red dashboard button.
+    - topic: pkru/kc868_a6_01/209-219/emergency/all_off
+      qos: 1
+      payload: "PRESS"
+      then:
+        - switch.turn_off: relay_1
+        - switch.turn_off: relay_2
+        - switch.turn_off: relay_3
+        - switch.turn_off: relay_4
+        - switch.turn_off: relay_5
+        - switch.turn_off: relay_6
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/all/state
+            payload: "OFF"
+            retain: true
+        # Do not play a relay-click sound here: emergency/all_off must leave
+        # every relay OFF. The old RTTTL actions were removed because this
+        # configuration has no external buzzer/rtttl component.
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "EMERGENCY_ALL_OFF"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "warning"
+            retain: true
+
+    # =====================================================
+    # NOTIFICATION SYSTEM — no onboard buzzer, so this uses the relay
+    # click as the "sound" instead. Since nothing is wired to real
+    # loads yet, clicking relays for fun/testing is safe. Same command
+    # topic/payloads as before (BEEP/SUCCESS/WARNING/ALARM/MELODY/STOP).
+    # It also still publishes sound/state + sound/level over MQTT
+    # (retained), so a dashboard can show it too, not just hear it.
+    #
+    # IMPORTANT once you wire real devices to the relays: each click
+    # here really switches that relay, which will flicker whatever
+    # ends up connected, and shows up in that relay's state/activity
+    # topics. Before going live, either move the click patterns to a
+    # spare/unused relay channel, or delete this block and go back to
+    # the MQTT-only version (sound/level alone, no relay clicks).
+    # =====================================================
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "BEEP"
+      then:
+        - script.execute: click_beep
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "BEEP"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "info"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "SUCCESS"
+      then:
+        - script.execute: click_success
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "SUCCESS"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "success"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "WARNING"
+      then:
+        - script.execute: click_warning
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "WARNING"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "warning"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "ALARM"
+      then:
+        - script.execute: click_alarm
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "ALARM"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "alarm"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "MELODY"
+      then:
+        - script.execute: click_melody
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "MELODY"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "info"
+            retain: true
+
+    - topic: pkru/kc868_a6_01/209-219/sound/play
+      payload: "STOP"
+      then:
+        - script.stop: click_beep
+        - script.stop: click_success
+        - script.stop: click_warning
+        - script.stop: click_alarm
+        - script.stop: click_melody
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: "IDLE"
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "idle"
+            retain: true
+
+    # Old "raw RTTTL melody" topic — now used to broadcast a free-text
+    # custom message instead of a melody string (level "custom"), no click.
+    - topic: pkru/kc868_a6_01/209-219/sound/rtttl
+      then:
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/state
+            payload: !lambda 'return x;'
+            retain: true
+        - mqtt.publish:
+            topic: pkru/kc868_a6_01/209-219/sound/level
+            payload: "custom"
+            retain: true
+
+# =========================================================
+# I2C BUS — KC868-A6 ใช้ GPIO4 (SDA) / GPIO15 (SCL) ตามสเปคบอร์ดจริง
+# บัสนี้ใช้ร่วมกันทั้ง PCF8574 (relay output) และ BH1750 (แสง)
+# =========================================================
+i2c:
+  sda: GPIO4
+  scl:
+    number: GPIO15
+    ignore_strapping_warning: true
+  scan: true
+
+# PCF8574 I/O expander บนบอร์ด KC868-A6: address 0x24 = output (relay 1-6)
+pcf8574:
+  - id: pcf_outputs
+    address: 0x24
+
+switch:
+  - platform: gpio
+    name: "AC209 Relay 1"
+    id: relay_1
+    pin:
+      pcf8574: pcf_outputs
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "AC209 Relay 2"
+    id: relay_2
+    pin:
+      pcf8574: pcf_outputs
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "AC209 Relay 3"
+    id: relay_3
+    pin:
+      pcf8574: pcf_outputs
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "AC209 Relay 4"
+    id: relay_4
+    pin:
+      pcf8574: pcf_outputs
+      number: 3
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "AC209 Relay 5"
+    id: relay_5
+    pin:
+      pcf8574: pcf_outputs
+      number: 4
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "AC209 Relay 6"
+    id: relay_6
+    pin:
+      pcf8574: pcf_outputs
+      number: 5
+      mode: OUTPUT
+      inverted: true
+
+# =========================================================
+# BLE scanner — จำเป็นสำหรับอ่าน Xiaomi Mijia 2 แบบ passive
+# (ใช้ platform bthome_mithermometer อ่านเซนเซอร์ที่แฟลชเป็น pvvx BTHome v2
+# firmware แล้ว — ข้อดีคือไม่ต้องมี bindkey เหมือน xiaomi_lywsd03mmc เดิม)
+# =========================================================
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 160ms
+    window: 160ms
+    active: true
+
+# =========================================================
+# เวลาจริงจาก SNTP (Asia/Bangkok, UTC+7) — ใช้ประทับเวลาทั้งใน MQTT,
+# Firebase latest และ history ข้อมูลจะถูกส่งไป Firebase "หลังจาก" เวลา
+# sync สำเร็จแล้วเท่านั้น (กันไม่ให้ history มีเวลาเป็น 1970-01-01)
+# =========================================================
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Asia/Bangkok
+    servers:
+      - th.pool.ntp.org
+      - time.navy.mi.th
+      - pool.ntp.org
+    on_time_sync:
+      then:
+        - logger.log: "SNTP synced — ส่ง snapshot แรกไป Firebase"
+        - script.execute: firebase_push_latest
+        - script.execute: firebase_push_history
+
+# =========================================================
+# GLOBALS — เก็บสถานะโหมดการทำงานของ relay และค่าแบตเตอรี่ครั้งก่อนหน้า
+# ของเซนเซอร์ทั้ง 6 ตัว เพื่อใช้เทียบว่า "แบตลดลง 1 หน่วย" หรือยัง
+# =========================================================
+globals:
+  - id: relay_mode
+    type: int
+    restore_value: true
+    initial_value: '0'          # 0 = โหมดแสง (BH1750), 1 = โหมดแบตเตอรี่ (Mijia)
+
+  - id: pending_mode
+    type: int
+    restore_value: false
+    initial_value: '-1'         # โหมดที่เลือกไว้ "รอทดสอบ/ยืนยัน" ยังไม่ commit เป็น relay_mode จริง
+
+  - id: prev_batt_1
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: prev_batt_2
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: prev_batt_3
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: prev_batt_4
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: prev_batt_5
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: prev_batt_6
+    type: float
+    restore_value: false
+    initial_value: '-1'
+
+  # ---------------------------------------------------------
+  # ใหม่: ตรวจสุขภาพ/ความสมเหตุสมผลของ BH1750 — บอร์ดนี้ยังไม่ได้ต่อ
+  # เซนเซอร์แสงจริง ค่าที่อ่านได้เลยกระโดดมั่ว ๆ (ไม่ใช่ NaN/unavailable
+  # แต่เป็นตัวเลขสุ่ม) จึงต้องเช็ค "การกระโดดของค่า" แทนการเช็ค unavailable
+  # ---------------------------------------------------------
+  - id: light_prev_value
+    type: float
+    restore_value: false
+    initial_value: '-1'
+  - id: light_unstable_streak
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: light_stable_streak
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+  # ---------------------------------------------------------
+  # ใหม่: เวลา (millis) ที่ได้รับสัญญาณ BLE ล่าสุดของ Mijia แต่ละตัว (1-10)
+  # ใช้ index 0-9 แทนเซนเซอร์ตัวที่ 1-10 — ใช้เช็คว่าตัวไหน "ออฟไลน์"
+  # (ไม่มีสัญญาณเข้ามาเกิน 5 นาที) ตัวไหน "ยังไม่เคยพบสัญญาณเลย" (=0)
+  # ---------------------------------------------------------
+  - id: mijia_last_seen
+    type: uint32_t[10]
+    restore_value: false
+    initial_value: '{0,0,0,0,0,0,0,0,0,0}'
+
+  # ---------------------------------------------------------
+  # ใหม่: บัฟเฟอร์ JSON ก้อนเดียวที่ใช้ส่งทั้ง latest และ history
+  # (สร้างครั้งเดียวใน script build_firebase_payload แล้วใช้ซ้ำ)
+  # ---------------------------------------------------------
+  - id: fb_payload
+    type: std::string
+    restore_value: false
+
+# =========================================================
+# FIREBASE REALTIME DATABASE — ส่งควบคู่กับ MQTT เดิม (MQTT ยังทำงาน
+# ครบทุกจุดเหมือนเดิม) ฐานข้อมูลเป็น test mode (เขียนได้โดยไม่ต้อง auth)
+#
+# ข้อมูลทั้งหมดรวมอยู่ใน JSON ก้อนเดียว ส่งไป 2 ที่:
+#   lab/esp32-209-224/latest.json   → PUT  (ทับของเดิม = ค่าล่าสุดเสมอ)
+#   lab/esp32-209-224/history.json  → POST (เพิ่มแถวใหม่ต่อท้าย Firebase
+#                                     สร้าง key อัตโนมัติเรียงตามเวลา)
+#
+# โครงสร้าง JSON (เหมือนกันทั้ง latest และ history แต่ละแถว):
+#   device, datetime ("2026-09-30 14:05:00"), timezone ("Asia/Bangkok"),
+#   timestamp (epoch วินาที), server_time (เวลาฝั่ง Firebase, ms)
+#   board  { online, uptime_s, mode_active, mode_pending,
+#            relay { relay_1..relay_6 } }
+#   light  { lux, healthy, status }
+#   mijia  { mijia_01..mijia_10 { mac, status, online, temp, humi, batt,
+#            last_seen } }
+#   summary { mijia_online, mijia_total, light_healthy }
+#
+# หมายเหตุ: ใช้ key "mijia_01".."mijia_10" แทน "1".."10" เพราะ Firebase
+# จะแปลง object ที่ key เป็นตัวเลขเรียงกันให้กลายเป็น array อัตโนมัติ
+# (อ่านกลับมาแล้วโครงสร้างเพี้ยน มี null ที่ index 0)
+#
+# ความปลอดภัย: verify_ssl: true — ESPHome บน ESP32 ใช้ชุด CA certificate
+# มาตรฐานที่ฝังมาในเฟิร์มแวร์ (common CA bundle) ซึ่งครอบคลุม Google Trust
+# Services ของ Firebase อยู่แล้ว จึงตรวจใบรับรองได้จริงโดยไม่ต้องฝัง cert เอง
+# (ถ้า log ขึ้น TLS/certificate error ค่อยเปลี่ยนเป็น false ชั่วคราวเพื่อไล่ปัญหา)
+# =========================================================
+substitutions:
+  firebase_url: "https://iot-209-224-default-rtdb.asia-southeast1.firebasedatabase.app"
+  firebase_path: "lab/esp32-209-224"
+  # ส่ง latest ถี่ (ให้ dashboard เห็นค่าสด) / history ห่างกว่า (กันฐาน
+  # ข้อมูลโตเร็วเกิน: ทุก 1 นาที = 1,440 แถว/วัน) ปรับได้ตามต้องการ
+  latest_interval: 30s
+  history_interval: 1min
+
+http_request:
+  useragent: esphome/ac209
+  timeout: 10s
+  verify_ssl: true
+
+sensor:
+  # -------------------------------------------------------
+  # 2) ค่าแสงจาก BH1750
+  # -------------------------------------------------------
+  - platform: bh1750
+    name: "AC209 Light Level"
+    id: light_sensor
+    address: 0x23
+    update_interval: 10s
+    on_value:
+      then:
+        - lambda: |-
+            // ---------------------------------------------------------
+            // ตรวจสอบความสมเหตุสมผลของค่าที่อ่านได้ (sanity check)
+            // บอร์ดนี้ยังไม่ได้ติดตั้งเซนเซอร์แสงจริง ค่าที่ได้จึงกระโดด
+            // มั่ว ๆ ไปเรื่อย ถ้าปล่อยให้ automation ทำงานตามค่านี้ตรง ๆ
+            // จะสั่ง relay สุ่มไปเรื่อยด้วย จึงเช็คว่าค่าที่อ่านได้
+            // "กระโดด" เกินเกณฑ์ (JUMP_THRESHOLD lux ต่อการอ่าน 1 ครั้ง)
+            // ติดต่อกันหลายครั้งหรือไม่ — ถ้าใช่ ถือว่าเซนเซอร์ผิดปกติ/
+            // ยังไม่ได้ติดตั้งจริง แล้วงดสั่งงาน relay จนกว่าค่าจะนิ่งอีกครั้ง
+            // ---------------------------------------------------------
+            const float JUMP_THRESHOLD = 300.0f;
+            if (id(light_prev_value) >= 0) {
+              float delta = fabsf(x - id(light_prev_value));
+              if (delta > JUMP_THRESHOLD) {
+                id(light_unstable_streak) += 1;
+                id(light_stable_streak) = 0;
+              } else {
+                id(light_stable_streak) += 1;
+                if (id(light_stable_streak) >= 3) {
+                  id(light_unstable_streak) = 0;
+                }
+              }
+            }
+            id(light_prev_value) = x;
+
+            bool sensor_healthy = id(light_unstable_streak) < 3;
+
+            // ทำงานเฉพาะตอนที่ relay อยู่ใน "โหมดแสง" (ข้อกำหนดที่ 3)
+            // และเซนเซอร์ผ่านการเช็คความสมเหตุสมผลแล้วเท่านั้น
+            if (id(relay_mode) == 0 && sensor_healthy) {
+              if (x < 50.0) {
+                id(light_alert_low).execute();
+              } else if (x > 90.0) {
+                id(light_alert_high).execute();
+              }
+            }
+            // 51-89 lux (หรือเซนเซอร์ยังไม่นิ่ง): อยู่ในช่วงปกติ/รอความชัวร์
+            // ไม่ต้องแจ้งเตือน
+
+  # -------------------------------------------------------
+  # 1) Mijia 2 x 10 ตัว
+  #
+  # ใช้ platform bthome_mithermometer (BTHome v2) แทน xiaomi_lywsd03mmc เดิม
+  # ตามตัวอย่าง bthome-999.yaml ที่แนบมา ข้อดีคือ:
+  #   - ไม่ต้องมี bindkey (ตัดขั้นตอนที่ยุ่งยากที่สุดออกไปได้เลย)
+  #   - เป็น community-maintained BLE format มาตรฐาน ไม่ผูกกับ vendor เดียว
+  #
+  # ข้อกำหนดก่อนใช้งาน: เซนเซอร์ทั้ง 10 ตัวต้องถูกแฟลชเป็น "pvvx custom
+  # firmware" โหมด BTHome v2 ก่อน (ของเดิมจากโรงงานอ่านไม่ได้ด้วย platform นี้)
+  # ดูวิธีแฟลชได้ที่ https://github.com/pvvx/ATC_MiThermometer
+  #
+  # หมายเหตุสำคัญ: บอร์ดนี้มี Relay แค่ 6 ตัว (relay_1-relay_6) ดังนั้น
+  # "แบตลด → ไล่คลิก relay 1 ถึง N" (ข้อกำหนดที่ 3) ใช้ได้เฉพาะเซนเซอร์
+  # ตัวที่ 1-6 เท่านั้น (ผูก 1:1 กับ relay เหมือนเดิม) ส่วนเซนเซอร์ตัวที่
+  # 7-10 จะยิงค่า temp/humi/batt ออกทาง MQTT/Firebase ตามปกติ แต่ "ไม่มี"
+  # การคลิก relay แจ้งเตือนแบตต่ำ (ไม่มี relay ให้ผูกเพิ่มแล้ว)
+  #
+  # ใหม่: ตอนนี้ก็ยังติดตั้งเซนเซอร์ไม่ครบทั้ง 10 ตัวจริง ๆ — ตัวที่ยังไม่
+  # ติดตั้ง/ยังไม่ได้ pairing จะไม่มีสัญญาณ BLE เข้ามาเลย จึงเพิ่มการเช็ค
+  # "เห็นสัญญาณล่าสุดเมื่อไหร่" (mijia_last_seen) แล้วรายงานสถานะ
+  # ออนไลน์/ออฟไลน์/ยังไม่พบสัญญาณ แยกเป็นเซนเซอร์ข้อความต่อเซนเซอร์ 1 ตัว
+  # (ดูส่วน text_sensor ด้านล่าง) แทนที่จะเดาว่าเซนเซอร์ทำงานหรือไม่
+  #
+  # แต่ละตัวทำอย่างน้อย 1 อย่าง (ตัวที่ 1-6 ทำ 2 อย่าง):
+  #   ก) [เฉพาะตัวที่ 1-6] on_value ของ battery_level → ใช้เช็ค "แบตลดลง
+  #      ≥1 หน่วย" เพื่อสั่ง relay alert ตามข้อกำหนดที่ 3 (เหมือนเดิม ไม่
+  #      เปลี่ยนตรรกะ)
+  #   ข) [ทุกตัว] on_value ของ temperature → ยิง MQTT เป็นชุด
+  #      เดียวต่อการอ่านหนึ่งครั้ง (Firebase จะดึงค่าล่าสุดไปรวมใน
+  #      snapshot ก้อนเดียวตามรอบเวลาเอง) (temp/humi/batt มาพร้อมกันใน BTHome
+  #      packet เดียว จึงยิงตอน temperature มาถึงเป็นจุดซิงก์ เพื่อไม่ต้อง
+  #      publish หลายรอบแยกกัน) — จุดเดียวกันนี้ยังอัปเดต mijia_last_seen
+  #      ของตัวนั้นด้วย
+  # -------------------------------------------------------
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:14:C1:83"
+    temperature:
+      name: "Mijia 1 Temperature"
+      id: temp_1
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 1
+            mac: "A4:C1:38:14:C1:83"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_1).state;"
+            batt: !lambda "return (int) id(batt_1).state;"
+    humidity:
+      name: "Mijia 1 Humidity"
+      id: humi_1
+    battery_level:
+      name: "Mijia 1 Battery"
+      id: batt_1
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_1) >= 0 &&
+                  (id(prev_batt_1) - x) >= 1.0) {
+                id(battery_alert_seq).execute(1);
+              }
+              id(prev_batt_1) = x;
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:BD:50:F9"
+    temperature:
+      name: "Mijia 2 Temperature"
+      id: temp_2
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 2
+            mac: "A4:C1:38:BD:50:F9"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_2).state;"
+            batt: !lambda "return (int) id(batt_2).state;"
+    humidity:
+      name: "Mijia 2 Humidity"
+      id: humi_2
+    battery_level:
+      name: "Mijia 2 Battery"
+      id: batt_2
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_2) >= 0 &&
+                  (id(prev_batt_2) - x) >= 1.0) {
+                id(battery_alert_seq).execute(2);
+              }
+              id(prev_batt_2) = x;
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:8F:16:38"
+    temperature:
+      name: "Mijia 3 Temperature"
+      id: temp_3
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 3
+            mac: "A4:C1:38:8F:16:38"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_3).state;"
+            batt: !lambda "return (int) id(batt_3).state;"
+    humidity:
+      name: "Mijia 3 Humidity"
+      id: humi_3
+    battery_level:
+      name: "Mijia 3 Battery"
+      id: batt_3
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_3) >= 0 &&
+                  (id(prev_batt_3) - x) >= 1.0) {
+                id(battery_alert_seq).execute(3);
+              }
+              id(prev_batt_3) = x;
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:17:09:4D"
+    temperature:
+      name: "Mijia 4 Temperature"
+      id: temp_4
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 4
+            mac: "A4:C1:38:17:09:4D"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_4).state;"
+            batt: !lambda "return (int) id(batt_4).state;"
+    humidity:
+      name: "Mijia 4 Humidity"
+      id: humi_4
+    battery_level:
+      name: "Mijia 4 Battery"
+      id: batt_4
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_4) >= 0 &&
+                  (id(prev_batt_4) - x) >= 1.0) {
+                id(battery_alert_seq).execute(4);
+              }
+              id(prev_batt_4) = x;
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:FC:63:78"
+    temperature:
+      name: "Mijia 5 Temperature"
+      id: temp_5
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 5
+            mac: "A4:C1:38:FC:63:78"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_5).state;"
+            batt: !lambda "return (int) id(batt_5).state;"
+    humidity:
+      name: "Mijia 5 Humidity"
+      id: humi_5
+    battery_level:
+      name: "Mijia 5 Battery"
+      id: batt_5
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_5) >= 0 &&
+                  (id(prev_batt_5) - x) >= 1.0) {
+                id(battery_alert_seq).execute(5);
+              }
+              id(prev_batt_5) = x;
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:7A:E3:D1"
+    temperature:
+      name: "Mijia 6 Temperature"
+      id: temp_6
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 6
+            mac: "A4:C1:38:7A:E3:D1"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_6).state;"
+            batt: !lambda "return (int) id(batt_6).state;"
+    humidity:
+      name: "Mijia 6 Humidity"
+      id: humi_6
+    battery_level:
+      name: "Mijia 6 Battery"
+      id: batt_6
+      on_value:
+        then:
+          - lambda: |-
+              if (id(relay_mode) == 1 && id(prev_batt_6) >= 0 &&
+                  (id(prev_batt_6) - x) >= 1.0) {
+                id(battery_alert_seq).execute(6);
+              }
+              id(prev_batt_6) = x;
+
+  # -------------------------------------------------------
+  # เซนเซอร์ตัวที่ 7-10: ไม่มี relay ให้ผูกแล้ว (บอร์ดมี relay แค่ 6 ตัว)
+  # จึงยิงแค่ temp/humi/batt ออก MQTT/Firebase ตามปกติ ไม่มี on_value ของ
+  # battery_level (ไม่มีการคลิก relay แจ้งเตือนแบตต่ำสำหรับตัวเหล่านี้)
+  # -------------------------------------------------------
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:20:0F:B6"
+    temperature:
+      name: "Mijia 7 Temperature"
+      id: temp_7
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 7
+            mac: "A4:C1:38:20:0F:B6"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_7).state;"
+            batt: !lambda "return (int) id(batt_7).state;"
+    humidity:
+      name: "Mijia 7 Humidity"
+      id: humi_7
+    battery_level:
+      name: "Mijia 7 Battery"
+      id: batt_7
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:70:64:10"
+    temperature:
+      name: "Mijia 8 Temperature"
+      id: temp_8
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 8
+            mac: "A4:C1:38:70:64:10"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_8).state;"
+            batt: !lambda "return (int) id(batt_8).state;"
+    humidity:
+      name: "Mijia 8 Humidity"
+      id: humi_8
+    battery_level:
+      name: "Mijia 8 Battery"
+      id: batt_8
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:33:03:B0"
+    temperature:
+      name: "Mijia 9 Temperature"
+      id: temp_9
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 9
+            mac: "A4:C1:38:33:03:B0"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_9).state;"
+            batt: !lambda "return (int) id(batt_9).state;"
+    humidity:
+      name: "Mijia 9 Humidity"
+      id: humi_9
+    battery_level:
+      name: "Mijia 9 Battery"
+      id: batt_9
+
+  - platform: bthome_mithermometer
+    mac_address: "A4:C1:38:62:BF:D3"
+    temperature:
+      name: "Mijia 10 Temperature"
+      id: temp_10
+      on_value:
+        - script.execute:
+            id: publish_bthome_mqtt
+            running_number: 10
+            mac: "A4:C1:38:62:BF:D3"
+            temp: !lambda "return x;"
+            humi: !lambda "return id(humi_10).state;"
+            batt: !lambda "return (int) id(batt_10).state;"
+    humidity:
+      name: "Mijia 10 Humidity"
+      id: humi_10
+    battery_level:
+      name: "Mijia 10 Battery"
+      id: batt_10
+
+# =========================================================
+# แสดงโหมดที่ใช้งานอยู่ + สถานะการทำงานของเซนเซอร์แต่ละตัวบน dashboard
+# (ข้อกำหนดที่ 4) — text_sensor พวกนี้ยังถูก ESPHome publish ออก MQTT
+# เป็นค่า default ให้อัตโนมัติเหมือน entity อื่น ๆ (topic เดิม ไม่กระทบ
+# ของเก่า) จึงต่อเข้า Node-RED/HA เพิ่มได้เลยในอนาคตโดยไม่ต้องแก้ yaml อีก
+# =========================================================
+text_sensor:
+  - platform: template
+    name: "AC209 Active Relay Mode"
+    id: active_mode_text
+    lambda: |-
+      if (id(relay_mode) == 0) {
+        return {"Light-based (BH1750)"};
+      } else {
+        return {"Battery-based (Mijia)"};
+      }
+    update_interval: 5s
+
+  # ใหม่: สถานะสุขภาพของเซนเซอร์แสง BH1750 — ให้ดูรู้ทันทีว่าตอนนี้ค่า
+  # แสงที่เห็นเชื่อถือได้หรือเป็นค่าสุ่มจากเซนเซอร์ที่ยังไม่ได้ติดตั้ง
+  - platform: template
+    name: "AC209 Light Sensor Status"
+    id: light_status_text
+    lambda: |-
+      if (id(light_unstable_streak) >= 3) {
+        return {"ไม่พบเซนเซอร์ / ค่าผิดปกติ (ยังไม่ได้ติดตั้ง?)"};
+      }
+      return {"ทำงานปกติ"};
+    update_interval: 5s
+
+  # ใหม่: สถานะออนไลน์/ออฟไลน์ของ Mijia แต่ละตัว (1-10) โดยเช็คจากเวลา
+  # ที่ได้รับสัญญาณ BLE ล่าสุด — ถ้าเกิน 5 นาทีไม่มีสัญญาณเข้ามาเลยถือว่า
+  # "ออฟไลน์" ถ้ายังไม่เคยได้รับสัญญาณเลยตั้งแต่บอร์ดบูตถือว่า "ยังไม่พบ
+  # สัญญาณ" (มีประโยชน์มากตอนนี้ที่ยังติดตั้งเซนเซอร์ไม่ครบ 10 ตัว)
+  - platform: template
+    name: "Mijia 1 Status"
+    id: mijia_1_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[0];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 2 Status"
+    id: mijia_2_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[1];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 3 Status"
+    id: mijia_3_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[2];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 4 Status"
+    id: mijia_4_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[3];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 5 Status"
+    id: mijia_5_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[4];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 6 Status"
+    id: mijia_6_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[5];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 7 Status"
+    id: mijia_7_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[6];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 8 Status"
+    id: mijia_8_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[7];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 9 Status"
+    id: mijia_9_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[8];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+  - platform: template
+    name: "Mijia 10 Status"
+    id: mijia_10_status
+    lambda: |-
+      uint32_t last = id(mijia_last_seen)[9];
+      if (last == 0) return {"ยังไม่พบสัญญาณ"};
+      if (millis() - last > 300000) return {"ออฟไลน์"};
+      return {"ออนไลน์"};
+    update_interval: 15s
+
+# =========================================================
+# เลือกโหมดใหม่ (ยังไม่ commit) + ปุ่มทดสอบ + ปุ่มยืนยัน (ข้อกำหนดที่ 3-4)
+# =========================================================
+select:
+  - platform: template
+    name: "AC209 Select Mode (Pending)"
+    id: candidate_mode_select
+    optimistic: true
+    options:
+      - "Light Mode (BH1750)"
+      - "Battery Mode (Mijia)"
+    initial_option: "Light Mode (BH1750)"
+    on_value:
+      then:
+        - lambda: |-
+            if (x == "Light Mode (BH1750)") {
+              id(pending_mode) = 0;
+            } else if (x == "Battery Mode (Mijia)") {
+              id(pending_mode) = 1;
+            }
+
+button:
+  - platform: template
+    name: "AC209 Test Alert Pattern"
+    id: btn_test_pattern
+    on_press:
+      then:
+        - script.execute: test_pattern
+
+  - platform: template
+    name: "AC209 Confirm Selected Mode"
+    id: btn_confirm_mode
+    on_press:
+      then:
+        - script.execute: confirm_mode_change
+
+  - platform: restart
+    name: "AC209 Restart"
+
+# GPIO18 is the SPI SCK pin (shared with the optional LoRa/nRF24L01 header).
+# It's free — this board has no onboard buzzer, so nothing else uses it.
+# If you solder on an external passive buzzer later, the old ledc+rtttl
+# setup can go back in (just don't use LoRa/nRF24L01 at the same time).
+
+# =========================================================
+# CLICK PATTERNS ("sound effects" using relay clicks)
+# relay_1/relay_2 double as the "click" channels for single-tone alerts;
+# MELODY marches through all 6 in sequence for a fun little run. Timings
+# are short (60-150ms) to keep it snappy and limit wear on the relay
+# contacts. mode: restart means a new pattern interrupts whatever's
+# currently playing, same as rtttl.stop + rtttl.play did before.
+#
+# ด้านล่างนี้เป็นสคริปต์ชุดเดิม (สำหรับคำสั่งผ่าน MQTT sound/play) รวมกับ
+# สคริปต์ชุดใหม่ที่ใช้กับ automation ของ BH1750 / Mijia / mode-switch
+# ตามข้อกำหนดที่ 3-4 ของงาน
+#
+# หมายเหตุการออกแบบ (ใหม่): จงใจ "ไม่" ผูก http_request ไปยัง Firebase
+# ไว้ที่ relay switch โดยตรง (เช่น on_turn_on/on_turn_off) เพราะรูปแบบ
+# เสียง/แจ้งเตือนพวกนี้กระพริบ relay รัว ๆ ทุก 60-150ms — ถ้ายิง HTTPS
+# request ทุกครั้งที่ relay ติด/ดับจะ (1) หน่วงจังหวะการกระพริบเพราะ
+# HTTPS ใช้เวลาจริงกว่า delay() ที่ตั้งไว้มาก (2) ยิง request ไป Firebase
+# รัว ๆ โดยไม่มีประโยชน์ (ไม่มีใครต้องดู log ทุกจังหวะของเสียง "บี๊บ")
+# จึงให้ Firebase อ่านสถานะ relay ปัจจุบันตอนสร้าง snapshot ตามรอบเวลา
+# แทน (ดู interval: ท้ายไฟล์) ซึ่งอ่านสถานะ relay ตอนนั้นจริง ๆ
+# (หลังรูปแบบเสียงเล่นจบแล้วเสมอ เพราะทุก pattern ใช้เวลา <2 วินาที)
+# =========================================================
+script:
+  # ---------------------------------------------------------
+  # ยิงค่าที่อ่านได้จาก Mijia แต่ละตัวออกไปเป็น MQTT JSON หนึ่งชุดต่อการ
+  # อ่านหนึ่งรอบ (running_number/mac_address/temp/humi/batt/datetime)
+  # topic: pkru/kc868_a6_01/209-219/mijia/<mac>/data — เหมือนเดิมทุก
+  # ประการ (ระบบเก่ายังอยู่ครบ) แล้วเพิ่มการอัปเดต
+  # mijia_last_seen[running_number-1] = millis() (ใช้เช็คออนไลน์/ออฟไลน์
+  # ทั้งใน text_sensor และใน snapshot ที่ส่งไป Firebase)
+  # ---------------------------------------------------------
+  - id: publish_bthome_mqtt
+    parameters:
+      running_number: int
+      mac: string
+      temp: float
+      humi: float
+      batt: int
+    then:
+      - mqtt.publish_json:
+          topic: !lambda |-
+            return std::string("pkru/kc868_a6_01/209-219/mijia/") + mac + "/data";
+          payload: |-
+            root["running_number"] = running_number;
+            root["mac_address"] = mac;
+            root["temp"] = temp;
+            root["humi"] = humi;
+            root["batt"] = batt;
+            root["datetime"] = id(sntp_time).now().strftime("%Y-%m-%d %H:%M:%S");
+      - lambda: |-
+          id(mijia_last_seen)[running_number - 1] = millis();
+
+  # ---------------------------------------------------------
+  # FIREBASE: สร้าง JSON snapshot ก้อนเดียวของทั้งระบบ เก็บไว้ใน
+  # fb_payload (ใช้ร่วมกันทั้ง latest และ history จะได้ตรงกันเป๊ะ)
+  # ---------------------------------------------------------
+  - id: build_firebase_payload
+    then:
+      - lambda: |-
+          const uint32_t OFFLINE_MS = 300000;   // Mijia เงียบเกิน 5 นาที = ออฟไลน์
+          auto now = id(sntp_time).now();
+          uint32_t ms = millis();
+
+          JsonDocument doc;
+          JsonObject root = doc.to<JsonObject>();
+
+          // ---- เวลา (เวลาจริง Asia/Bangkok จาก SNTP) ----
+          root["device"] = "esp32-209-224";
+          root["datetime"] = now.strftime("%Y-%m-%d %H:%M:%S");
+          root["timezone"] = "Asia/Bangkok";
+          root["timestamp"] = (uint32_t) now.timestamp;
+          root["server_time"][".sv"] = "timestamp";   // Firebase เติมเวลาฝั่ง server ให้
+
+          // ---- บอร์ด / โหมด / relay ----
+          JsonObject board = root["board"].to<JsonObject>();
+          board["online"] = true;
+          board["uptime_s"] = ms / 1000;
+          board["mode_active"] = id(active_mode_text).state;
+          board["mode_pending"] = id(candidate_mode_select).current_option().str();
+          JsonObject relay = board["relay"].to<JsonObject>();
+          relay["relay_1"] = id(relay_1).state;
+          relay["relay_2"] = id(relay_2).state;
+          relay["relay_3"] = id(relay_3).state;
+          relay["relay_4"] = id(relay_4).state;
+          relay["relay_5"] = id(relay_5).state;
+          relay["relay_6"] = id(relay_6).state;
+
+          // ---- แสง BH1750 ----
+          JsonObject light = root["light"].to<JsonObject>();
+          float lux = id(light_sensor).state;
+          bool light_value_available = std::isfinite(lux);
+          bool light_ok = light_value_available && id(light_unstable_streak) < 3;
+          if (light_value_available) light["lux"] = roundf(lux * 10) / 10;
+          light["healthy"] = light_ok;
+          light["status"] = !light_value_available
+              ? "ไม่มีข้อมูลจาก BH1750 (ตรวจสอบการต่อ I2C/เซนเซอร์)"
+              : (light_ok ? "ทำงานปกติ" : "ค่าผิดปกติ (ตรวจสอบ BH1750)");
+
+          // ---- Mijia 1-10 ----
+          static const char *const MACS[10] = {
+            "A4:C1:38:14:C1:83", "A4:C1:38:BD:50:F9", "A4:C1:38:8F:16:38",
+            "A4:C1:38:17:09:4D", "A4:C1:38:FC:63:78", "A4:C1:38:7A:E3:D1",
+            "A4:C1:38:20:0F:B6", "A4:C1:38:70:64:10", "A4:C1:38:33:03:B0",
+            "A4:C1:38:62:BF:D3"};
+          sensor::Sensor *T[10] = {id(temp_1), id(temp_2), id(temp_3), id(temp_4), id(temp_5),
+                                   id(temp_6), id(temp_7), id(temp_8), id(temp_9), id(temp_10)};
+          sensor::Sensor *H[10] = {id(humi_1), id(humi_2), id(humi_3), id(humi_4), id(humi_5),
+                                   id(humi_6), id(humi_7), id(humi_8), id(humi_9), id(humi_10)};
+          sensor::Sensor *B[10] = {id(batt_1), id(batt_2), id(batt_3), id(batt_4), id(batt_5),
+                                   id(batt_6), id(batt_7), id(batt_8), id(batt_9), id(batt_10)};
+
+          JsonObject mijia = root["mijia"].to<JsonObject>();
+          int online_count = 0;
+          for (int i = 0; i < 10; i++) {
+            char key[10];
+            snprintf(key, sizeof(key), "mijia_%02d", i + 1);
+            JsonObject m = mijia[key].to<JsonObject>();
+            m["mac"] = MACS[i];
+
+            uint32_t last = id(mijia_last_seen)[i];
+            bool online = (last != 0) && (ms - last <= OFFLINE_MS);
+            if (online) online_count++;
+            m["online"] = online;
+            m["status"] = (last == 0) ? "ยังไม่พบสัญญาณ" : (online ? "ออนไลน์" : "ออฟไลน์");
+
+            if (last != 0) {
+              // เวลาจริงที่ได้รับสัญญาณล่าสุด = เวลาตอนนี้ - (ผ่านไปกี่วินาที)
+              time_t seen = now.timestamp - (time_t) ((ms - last) / 1000);
+              m["last_seen"] = ESPTime::from_epoch_local(seen).strftime("%Y-%m-%d %H:%M:%S");
+              if (!std::isnan(T[i]->state)) m["temp"] = roundf(T[i]->state * 10) / 10;
+              if (!std::isnan(H[i]->state)) m["humi"] = roundf(H[i]->state);
+              if (!std::isnan(B[i]->state)) m["batt"] = (int) B[i]->state;
+            }
+          }
+
+          // ---- สรุปภาพรวม ----
+          JsonObject summary = root["summary"].to<JsonObject>();
+          summary["mijia_online"] = online_count;
+          summary["mijia_total"] = 10;
+          summary["light_healthy"] = light_ok;
+
+          id(fb_payload).clear();
+          serializeJson(doc, id(fb_payload));
+
+  # ค่าล่าสุด: PUT ทับ lab/esp32-209-224/latest.json
+  - id: firebase_push_latest
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(sntp_time).now().is_valid();'
+          then:
+            - script.execute: build_firebase_payload
+            - http_request.send:
+                method: PUT
+                url: "${firebase_url}/${firebase_path}/latest.json"
+                request_headers:
+                  Content-Type: application/json
+                body: !lambda 'return id(fb_payload);'
+          else:
+            - logger.log: "Firebase latest: รอ SNTP sync เวลาก่อน"
+
+  # ประวัติ: POST ต่อท้าย lab/esp32-209-224/history.json (1 แถว/ครั้ง)
+  - id: firebase_push_history
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(sntp_time).now().is_valid();'
+          then:
+            - script.execute: build_firebase_payload
+            - http_request.send:
+                method: POST
+                url: "${firebase_url}/${firebase_path}/history.json"
+                request_headers:
+                  Content-Type: application/json
+                body: !lambda 'return id(fb_payload);'
+          else:
+            - logger.log: "Firebase history: รอ SNTP sync เวลาก่อน"
+
+  - id: click_beep
+    mode: restart
+    then:
+      - switch.turn_on: relay_1
+      - delay: 60ms
+      - switch.turn_off: relay_1
+
+  - id: click_success
+    mode: restart
+    then:
+      - switch.turn_on: relay_1
+      - delay: 80ms
+      - switch.turn_off: relay_1
+      - delay: 80ms
+      - switch.turn_on: relay_2
+      - delay: 80ms
+      - switch.turn_off: relay_2
+
+  - id: click_warning
+    mode: restart
+    then:
+      - repeat:
+          count: 3
+          then:
+            - switch.turn_on: relay_1
+            - delay: 150ms
+            - switch.turn_off: relay_1
+            - delay: 150ms
+
+  - id: click_alarm
+    mode: restart
+    then:
+      - repeat:
+          count: 8
+          then:
+            - switch.turn_on: relay_1
+            - delay: 80ms
+            - switch.turn_off: relay_1
+            - delay: 80ms
+
+  - id: click_melody
+    mode: restart
+    then:
+      - switch.turn_on: relay_1
+      - delay: 100ms
+      - switch.turn_off: relay_1
+      - delay: 60ms
+      - switch.turn_on: relay_2
+      - delay: 100ms
+      - switch.turn_off: relay_2
+      - delay: 60ms
+      - switch.turn_on: relay_3
+      - delay: 100ms
+      - switch.turn_off: relay_3
+      - delay: 60ms
+      - switch.turn_on: relay_4
+      - delay: 100ms
+      - switch.turn_off: relay_4
+      - delay: 60ms
+      - switch.turn_on: relay_5
+      - delay: 100ms
+      - switch.turn_off: relay_5
+      - delay: 60ms
+      - switch.turn_on: relay_6
+      - delay: 100ms
+      - switch.turn_off: relay_6
+
+  # ---------------------------------------------------------
+  # แสงต่ำกว่า 50 lux → เตือน "1 จังหวะ" ไล่จาก relay1 ถึง relay3
+  # ---------------------------------------------------------
+  - id: light_alert_low
+    mode: restart
+    then:
+      - switch.turn_on: relay_1
+      - delay: 100ms
+      - switch.turn_off: relay_1
+      - delay: 60ms
+      - switch.turn_on: relay_2
+      - delay: 100ms
+      - switch.turn_off: relay_2
+      - delay: 60ms
+      - switch.turn_on: relay_3
+      - delay: 100ms
+      - switch.turn_off: relay_3
+
+  # ---------------------------------------------------------
+  # แสงมากกว่า 90 lux → เตือน "2 จังหวะ" ไล่จาก relay6 ถึง relay4
+  # ---------------------------------------------------------
+  - id: light_alert_high
+    mode: restart
+    then:
+      - repeat:
+          count: 2
+          then:
+            - switch.turn_on: relay_6
+            - delay: 100ms
+            - switch.turn_off: relay_6
+            - delay: 60ms
+            - switch.turn_on: relay_5
+            - delay: 100ms
+            - switch.turn_off: relay_5
+            - delay: 60ms
+            - switch.turn_on: relay_4
+            - delay: 100ms
+            - switch.turn_off: relay_4
+            - delay: 200ms
+
+  # ---------------------------------------------------------
+  # แบตของ Mijia ตัวที่ n ลดลง 1 หน่วย → ไล่คลิก relay1 ถึง relayN ตามลำดับ
+  # ตัวอย่าง: เซนเซอร์ตัวที่ 1 ลด → คลิกแค่ relay1 (1 ครั้ง)
+  #           เซนเซอร์ตัวที่ 5 ลด → ไล่คลิก relay1,2,3,4,5 ตามลำดับ
+  # mode: queued กันไม่ให้สัญญาณของเซนเซอร์ตัวหนึ่งไปตัดจังหวะของอีกตัว
+  # ---------------------------------------------------------
+  - id: battery_alert_seq
+    mode: queued
+    parameters:
+      n: int
+    then:
+      - if:
+          condition:
+            lambda: 'return n >= 1;'
+          then:
+            - switch.turn_on: relay_1
+            - delay: 120ms
+            - switch.turn_off: relay_1
+            - delay: 80ms
+      - if:
+          condition:
+            lambda: 'return n >= 2;'
+          then:
+            - switch.turn_on: relay_2
+            - delay: 120ms
+            - switch.turn_off: relay_2
+            - delay: 80ms
+      - if:
+          condition:
+            lambda: 'return n >= 3;'
+          then:
+            - switch.turn_on: relay_3
+            - delay: 120ms
+            - switch.turn_off: relay_3
+            - delay: 80ms
+      - if:
+          condition:
+            lambda: 'return n >= 4;'
+          then:
+            - switch.turn_on: relay_4
+            - delay: 120ms
+            - switch.turn_off: relay_4
+            - delay: 80ms
+      - if:
+          condition:
+            lambda: 'return n >= 5;'
+          then:
+            - switch.turn_on: relay_5
+            - delay: 120ms
+            - switch.turn_off: relay_5
+            - delay: 80ms
+      - if:
+          condition:
+            lambda: 'return n >= 6;'
+          then:
+            - switch.turn_on: relay_6
+            - delay: 120ms
+            - switch.turn_off: relay_6
+            - delay: 80ms
+
+  # ---------------------------------------------------------
+  # ทดสอบ/พรีวิวรูปแบบการแจ้งเตือนของโหมดที่ "เลือกไว้แต่ยังไม่ยืนยัน"
+  # (pending_mode) — ไม่แตะ relay_mode จริง ไม่กระทบการทำงานปกติ
+  # ---------------------------------------------------------
+  - id: test_pattern
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(pending_mode) == 0;'
+          then:
+            - logger.log: "Preview: light-mode pattern (low → high)"
+            - script.execute: light_alert_low
+            - delay: 500ms
+            - script.execute: light_alert_high
+      - if:
+          condition:
+            lambda: 'return id(pending_mode) == 1;'
+          then:
+            - logger.log: "Preview: battery-mode pattern (sample n=3)"
+            - script.execute:
+                id: battery_alert_seq
+                n: 3
+
+  # ---------------------------------------------------------
+  # ยืนยันการเปลี่ยนโหมดจริง (commit pending_mode → relay_mode)
+  # แล้วเล่นสัญญาณ "ยืนยันแล้ว" ซึ่งเป็นรูปแบบเฉพาะที่ไม่ซ้ำกับสัญญาณ
+  # อื่นใดในระบบ (relay ทั้ง 6 ตัวติด-ดับพร้อมกัน 3 รอบ)
+  # ---------------------------------------------------------
+  - id: confirm_mode_change
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(pending_mode) != -1 && id(pending_mode) != id(relay_mode);'
+          then:
+            - lambda: 'id(relay_mode) = id(pending_mode);'
+            - logger.log: "Relay alert mode changed and confirmed"
+            - script.execute: mode_confirmed_signal
+          else:
+            - logger.log: "No mode change to confirm (same mode or nothing selected)"
+
+  - id: mode_confirmed_signal
+    mode: restart
+    then:
+      - repeat:
+          count: 3
+          then:
+            - switch.turn_on: relay_1
+            - switch.turn_on: relay_2
+            - switch.turn_on: relay_3
+            - switch.turn_on: relay_4
+            - switch.turn_on: relay_5
+            - switch.turn_on: relay_6
+            - delay: 100ms
+            - switch.turn_off: relay_1
+            - switch.turn_off: relay_2
+            - switch.turn_off: relay_3
+            - switch.turn_off: relay_4
+            - switch.turn_off: relay_5
+            - switch.turn_off: relay_6
+            - delay: 100ms
+
+# =========================================================
+# FIREBASE รอบเวลา — latest ทุก ${latest_interval}, history ทุก
+# ${history_interval} (ตั้งค่าใน substitutions ด้านบน) ทั้งคู่ใช้ snapshot
+# รูปแบบเดียวกัน และจะไม่ส่งจนกว่าเวลา SNTP จะ sync แล้ว
+#
+# หมายเหตุ: Firebase REST (บอร์ดยิงข้อมูลเข้าไปฝ่ายเดียว) ไม่มีกลไกแบบ
+# MQTT will-message — ฝั่งที่อ่าน latest ต้องดูว่า "timestamp" ค้างนาน
+# เกิน ~2 รอบ (เช่น > 90 วินาที) แล้วสรุปเองว่าบอร์ดออฟไลน์
+# =========================================================
+interval:
+  - interval: ${latest_interval}
+    then:
+      - script.execute: firebase_push_latest
+  - interval: ${history_interval}
+    then:
+      - script.execute: firebase_push_history
