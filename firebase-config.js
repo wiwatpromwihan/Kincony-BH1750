@@ -1,13 +1,13 @@
-// Firebase Web App config (public client configuration, not an admin credential).
-// Replace the placeholders with the Web App config from Firebase Console.
+// Firebase Web App configuration for the iot-209-224 project.
+// These are client-side web config values; database access is controlled by RTDB Rules.
 export const firebaseConfig = {
-  apiKey: 'YOUR_FIREBASE_WEB_API_KEY',
-  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+  apiKey: 'AIzaSyAlGvpcq7-SnK6DJiTg5GPVBO7YDrEup8s',
+  authDomain: 'iot-209-224.firebaseapp.com',
   databaseURL: 'https://iot-209-224-default-rtdb.asia-southeast1.firebasedatabase.app',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_FIREBASE_WEB_APP_ID'
+  projectId: 'iot-209-224',
+  storageBucket: 'iot-209-224.firebasestorage.app',
+  messagingSenderId: '842852065543',
+  appId: '1:842852065543:web:48d7f5d00b6b5e74b1a5a2'
 };
 export const databaseURL = 'https://iot-209-224-default-rtdb.asia-southeast1.firebasedatabase.app';
 export const dataPath = 'lab/esp32-209-224';
